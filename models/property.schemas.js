@@ -1,16 +1,16 @@
 const { Schema, model } = require('mongoose');
-const unequeValidator = require('mongoose-unique-validator');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const validCategory = {
     values: ['APARTAMENT', 'HOME', 'GARAGE', 'SHOP','OFFICE','DEPOSIT','BARN','LAND','HECTARES'],
     message: '{PATH} is not valid category'
 }
-const ValidContractType = {
-    value: ['RENT', 'SALE'],
+const validContractType = {
+    values: ['RENT', 'SALE'],
     message: '{VALUE} is not a valid contract'
 }
-const ValidContractCurrency = {
-    value: ['ARS', 'UDS'],
+const validContractCurrency = {
+    values: ['ARS', 'UDS'],
     message: '{VALUE} is not a valid currency'
 }
 
@@ -21,7 +21,6 @@ const propertySchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Estate",
         required: true
-
     },
     status: {
         type: Boolean,
@@ -36,19 +35,19 @@ const propertySchema = new Schema({
         type: {
             type: String,
             required: true,
-            enum: ValidContractType
+            enum: validContractType
         },
         currency: {
             type: String,
             defaul: "ARS",
-            enum: ValidContractCurrency
+            enum: validContractCurrency
         },
         price: {
-            type: Number,
+            type: Schema.Types.Decimal128,
             required: true
         },
         expenses: {
-            type: Number,
+            type: Schema.Types.Decimal128,
             required: true
         }
     },
@@ -128,5 +127,7 @@ const propertySchema = new Schema({
 {
     timestamps: true
 });
+
+propertySchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
 
 module.exports = model('Property', propertySchema)

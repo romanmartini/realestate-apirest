@@ -41,7 +41,7 @@ const getUser = async (req, res) => {
                 code: 'ERR',
                 success: false,
                 message: 'The user id could not be found',
-                data: user
+                data: null
                 
             })
         }

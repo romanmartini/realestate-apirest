@@ -1,7 +1,7 @@
-const { getAllProperty, getProperty, postProperty, putProperty, delProperty } = require('../controllers/property.controllers');
+const { getAllProperties, getProperty, postProperty, putProperty, delProperty } = require('../controllers/property.controllers');
 const router = require('express').Router();
 
-router.get('/', getAllProperty);
+router.get('/', getAllProperties);
 router.get('/:_id', getProperty);
 router.post('/', postProperty);
 router.put('/:_id', putProperty);

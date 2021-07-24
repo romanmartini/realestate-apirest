@@ -4,6 +4,9 @@ const propertyRoutes = require('./property.routes');
 const estateRoutes = require('./estate.routes');
 
 const app = express();
+app.use( express.json() )
+app.use( express.text() )
+
 
 app.use( '/user', userRoutes );
 app.use( '/property', propertyRoutes );

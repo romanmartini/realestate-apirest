@@ -9,19 +9,14 @@ const ValidContractType = {
     value: ['RENT', 'SALE'],
     message: '{VALUE} is not a valid contract'
 }
-// const ValidContractCurrency = {
-//     value: ['ARS', 'UDS'],
-//     message: '{VALUE} is not a valid currency'
-// }
+const ValidContractCurrency = {
+    value: ['ARS', 'UDS'],
+    message: '{VALUE} is not a valid currency'
+}
 
 
 const propertySchema = new Schema({
 
-    manager: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true
-    },
     estateManager : {
         type: Schema.Types.ObjectId,
         ref: "Estate",
@@ -36,6 +31,26 @@ const propertySchema = new Schema({
         type: String,
         required: true,
         enum: validCategory
+    },
+    contract: {
+        type: {
+            type: String,
+            required: true,
+            enum: ValidContractType
+        },
+        currency: {
+            type: String,
+            defaul: "ARS",
+            enum: ValidContractCurrency
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        expenses: {
+            type: Number,
+            required: true
+        }
     },
     data: {
         title: {
@@ -104,26 +119,8 @@ const propertySchema = new Schema({
             lon: {
                 type: String
             }
-        },
-        contract: {
-            type: {
-                type: String,
-                required: true,
-                enum: ValidContractType
-            },
-            // currency: {
-            //     type: String,
-            //     enum: ValidContractCurrency
-            // },
-            price: {
-                type: Number,
-                required: true
-            },
-            expenses: {
-                type: Number,
-                required: true
-            }
         }
+        
 
     }
 

@@ -1,7 +1,5 @@
 const { Schema, model } = require('mongoose');
-// const unequeValidator = require('mongoose-unique-validator');
-
-
+const uniqueValidator = require('mongoose-unique-validator')
 
 const estateSchema = new Schema({
 
@@ -19,14 +17,21 @@ const estateSchema = new Schema({
         required: true
     },
     properties: [{
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: "Property",
     }],
     contact: {
         phone: {
-            type: String
+            type: String,
+            required: true
         },
         urlWhatsapp: {
             type: String
+        },
+        email: {
+            type: String,
+            unique: true,
+            required: [true, 'email is required']
         }
     },
 },
@@ -34,7 +39,7 @@ const estateSchema = new Schema({
     timestamps: true
 });
 
-// usuarioSchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
+estateSchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
 
 
 module.exports = model('Estate', estateSchema)

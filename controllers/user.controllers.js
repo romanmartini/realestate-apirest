@@ -3,15 +3,30 @@ const bcrypt = require('bcrypt');
 
 
 const getAllUser = async (req, res) => {
-    
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skipIndex = (page - 1) * limit;
+    const orderBy = req.query.orderby;
+
     try {
-        const users = await User.find();
+        const count = await User.countDocuments();
+        const users = await User.find(null, 'name surname email img role status google')
+            .sort(orderBy)
+            .limit(limit)
+            .skip(skipIndex)   
+        
+        const pages = Math.ceil(count / limit);
 
         return res.json({
             code: 'OK',
             success: true,
             message: 'getAllUser',
-            data: users
+            data: {
+                count,
+                pages,
+                users
+            }
         
         })
 
@@ -37,8 +52,8 @@ const getUser = async (req, res) => {
         
         const user = await User.findById({_id: req.params._id})
         if( !user ){
-            return res.status(400).json({
-                code: 'ERR',
+            return res.status(404).json({
+                code: 'NOT-FOUND',
                 success: false,
                 message: 'The user id could not be found',
                 data: null
@@ -65,7 +80,7 @@ const getUser = async (req, res) => {
     }
 }
 
-const postUser = async(req, res) => {
+const postUser = async (req, res) => {
 
     try{
         const {name, surname, email, password, role} = req.body;
@@ -102,9 +117,17 @@ const postUser = async(req, res) => {
 const putUser = async (req, res) => {
 
     try{
+        const { name, surname, img, role, status } = req.body; 
+        const user = await User.findByIdAndUpdate({_id: req.params._id}, { name, surname, img, role, status }, {new: true, runValidators: true});
+        if( !user ){
+            return res.status(404).json({
+                code: 'NOT-FOUND',
+                success: false,
+                message: 'User not found',
+                data: null
+            })
 
-        const user = await User.findByIdAndUpdate({_id: req.params._id}, {...req.body}, {new: true});
-        
+        }
         return res.json({
             code: 'OK',
             success: true,

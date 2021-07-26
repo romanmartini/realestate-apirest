@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model, models } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 
 const validCategory = {
@@ -43,12 +43,11 @@ const propertySchema = new Schema({
             enum: validContractCurrency
         },
         price: {
-            type: Schema.Types.Decimal128,
+            type: Number,
             required: true
         },
         expenses: {
-            type: Schema.Types.Decimal128,
-            required: true
+            type: Number,
         }
     },
     data: {
@@ -129,5 +128,51 @@ const propertySchema = new Schema({
 });
 
 propertySchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
+
+propertySchema.methods.pushToEstate = async function(req){
+
+    const property = this;
+    
+    try{
+
+        let estateDB = await models.Estate.findById(property.estateManager);
+        if( !estateDB ) throw new Error('NOT-FOUND: Estate not found');
+
+        if (estateDB.properties.indexOf(property._id) < 0) estateDB.properties.push(property._id);
+        
+        estateDB = await estateDB.save();
+        if( !estateDB ) throw new Error('Could not save');
+
+        return true;
+ 
+    }catch(err){
+        if (req.method === 'POST') await models.Property.deleteOne({ _id: property._id });
+        console.log(err);
+        return false;
+    }
+
+}
+
+propertySchema.statics.spliceToEstate = async function(propertyId) {
+
+    try {
+
+        const property = await models.Property.findById(propertyId);
+        if( !property ) throw new Error('NOT-FOUND: property._id was not found on the Estate');
+
+        let EstateDB = await models.Estate.findById(property.estateManager);
+        if( !EstateDB ) throw new Error('NOT-FOUND: Estate could not be found');
+
+        EstateDB.properties.splice(EstateDB.properties.indexOf(property._id), 1);
+        
+        EstateDB = await EstateDB.save();
+        if( !EstateDB ) throw new Error('SERVER-ERR: Could not save');
+
+        return {success: true}
+
+    } catch (err) {
+        return {success: false, message: err.message}
+    }
+}
 
 module.exports = model('Property', propertySchema)

@@ -1,16 +1,32 @@
 const Property = require('../models/property.schemas');
 
 const getAllProperties = async (req, res) => {
-    
-    try {
-        const properties = await Property.find()
-            .populate( "manager", "name email" );
 
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skipIndex = (page - 1) * limit;
+    const orderBy = req.query.orderby;
+
+    try {
+
+        const count = await Property.countDocuments();
+        const properties = await Property.find(null, '')
+            .sort(orderBy)
+            .limit(limit)
+            .skip(skipIndex)
+            .populate( "estateManager", "name phone urlWhatsapp" )
+        
+        const pages = Math.ceil(count / limit);
+        
         return res.json({
             code: 'OK',
             success: true,
             message: 'getAllproperties',
-            data: properties
+            data: {
+                count,
+                pages,
+                properties
+            }
         
         })
 
@@ -35,9 +51,11 @@ const getProperty = async (req, res) => {
     try {
         
         const property = await Property.findById({_id: req.params._id})
+            .populate( "manager", "name email" );
+
         if( !property ){
-            return res.status(400).json({
-                code: 'ERR',
+            return res.status(404).json({
+                code: 'NOT-FOUND',
                 success: false,
                 message: 'Property id not found',
                 data: null
@@ -106,6 +124,16 @@ const postProperty = async(req, res) => {
                 }
             }
         });
+        const propertiesEstate = await property.pushToEstate(req);
+        if( !propertiesEstate ){
+            
+            return res.json({
+                code: 'ERR',
+                success: false,
+                message: 'the property could not be add to estate',
+                data: null
+            })
+        }
         
         return res.json({
             code: 'OK',
@@ -170,8 +198,17 @@ const putProperty = async (req, res) => {
                     lon,
                 }
             }
-        }, {new: true});
-        
+        }, {new: true, runValidators: true});
+
+        if( !property ){
+            return res.status(404).json({
+                code: 'NOT-FOUND',
+                success: false,
+                message: 'Property not found',
+                data: null
+            })
+
+        }
         return res.json({
             code: 'OK',
             success: true,
@@ -195,13 +232,24 @@ const delProperty = async (req, res) => {
 
     try {
 
-        const property = await Property.deleteOne({_id: req.params._id});
-        
+        const spliceToEstate = await Property.spliceToEstate(req.params._id);
+        if( !spliceToEstate.success ){
+            return res.status(404).json({
+                code: 'ERR',
+                success: false,
+                message: spliceToEstate.message,
+                data: null
+            
+            })
+        }
+
+        await Property.deleteOne({_id: req.params._id})
+
         return res.json({
             code: 'OK',
             success: true,
             message: 'Delete Property',
-            data: property
+            data: null
         
         })
 

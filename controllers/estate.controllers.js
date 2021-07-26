@@ -1,16 +1,31 @@
 const Estate = require('../models/estate.schemas');
 
 const getAllEstate = async (req, res) => {
-    
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skipIndex = (page - 1) * limit;
+    const orderBy = req.query.orderby;
+
     try {
+        const count = await Estate.countDocuments();
         const estates = await Estate.find()
+            .sort(orderBy)
+            .limit(limit)
+            .skip(skipIndex)
             .populate( "manager", "name email" );
+
+        const pages = Math.ceil(count / limit);
 
         return res.json({
             code: 'OK',
             success: true,
             message: 'getAllEstate',
-            data: estates
+            data: {
+                count,
+                pages,
+                estates
+            }
         
         })
 
@@ -36,8 +51,8 @@ const getEstate = async (req, res) => {
         
         const estate = await Estate.findById({_id: req.params._id})
         if( !estate ){
-            return res.status(400).json({
-                code: 'ERR',
+            return res.status(404).json({
+                code: 'NOT-FOUND',
                 success: false,
                 message: 'The estate id could not be found',
                 data: null
@@ -95,8 +110,16 @@ const putEstate = async (req, res) => {
 
     try{
 
-        const estate = await Estate.findByIdAndUpdate({_id: req.params._id}, {...req.body}, {new: true});
-        
+        const estate = await Estate.findByIdAndUpdate({_id: req.params._id}, {...req.body}, {new: true, runValidators: true});
+        if( !estate ){
+            return res.status(404).json({
+                code: 'NOT-FOUND',
+                success: false,
+                message: 'Estate not found',
+                data: null
+            })
+        }
+
         return res.json({
             code: 'OK',
             success: true,
@@ -122,14 +145,14 @@ const delEstate = async (req, res) => {
 
         const estate = await Estate.deleteOne({_id: req.params._id});
         if( !estate ){
-            return res.json({
-                code: 'ERR',
+            return res.status(404).json({
+                code: 'NOT-FOUND',
                 success: false,
                 message: 'The Estate Id could not be found',
                 data: null
-            
             })
         }
+        
         return res.json({
             code: 'OK',
             success: true,

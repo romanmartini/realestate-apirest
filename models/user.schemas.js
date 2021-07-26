@@ -51,5 +51,14 @@ const userSchema = new Schema({
 
 userSchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
 
+userSchema.methods.toJSON = function(){
+
+    const user = this;
+    const userObject = user.toObject();
+    delete userObject.password;
+    return userObject;
+
+}
+
 
 module.exports = model('User', userSchema)

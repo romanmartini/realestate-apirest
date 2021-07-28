@@ -2,7 +2,7 @@
 
 ## Releases
 
-- **[v0.0.3](https://github.com/romanmartini/realestate-apirest/tree/v0.0.3)** Autentication
+- **[v0.0.3](https://github.com/romanmartini/realestate-apirest/tree/v0.0.3)** Token authentication, login, singIn, validations, middlewares. 
 
 - **[v0.0.2](https://github.com/romanmartini/realestate-apirest/tree/v0.0.2)** beta CRUD
 

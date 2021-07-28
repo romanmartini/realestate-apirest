@@ -1,8 +1,6 @@
-const User = require('../models/user.schemas');
-const bcrypt = require('bcrypt');
+const Estate = require('../models/estate.model');
 
-
-const getAllUser = async (req, res) => {
+const getAllEstate = async (req, res) => {
 
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
@@ -10,22 +8,23 @@ const getAllUser = async (req, res) => {
     const orderBy = req.query.orderby;
 
     try {
-        const count = await User.countDocuments();
-        const users = await User.find(null, 'name surname email img role status google')
+        const count = await Estate.countDocuments();
+        const estates = await Estate.find()
             .sort(orderBy)
             .limit(limit)
-            .skip(skipIndex)   
-        
+            .skip(skipIndex)
+            .populate( "manager", "name email" );
+
         const pages = Math.ceil(count / limit);
 
         return res.json({
             code: 'OK',
             success: true,
-            message: 'getAllUser',
+            message: 'getAllEstate',
             data: {
                 count,
                 pages,
-                users
+                estates
             }
         
         })
@@ -46,16 +45,16 @@ const getAllUser = async (req, res) => {
 
 }
 
-const getUser = async (req, res) => {
+const getEstate = async (req, res) => {
 
     try {
         
-        const user = await User.findById({_id: req.params._id})
-        if( !user ){
+        const estate = await Estate.findById({_id: req.params._id})
+        if( !estate ){
             return res.status(404).json({
                 code: 'NOT-FOUND',
                 success: false,
-                message: 'The user id could not be found',
+                message: 'The estate id could not be found',
                 data: null
                 
             })
@@ -63,8 +62,8 @@ const getUser = async (req, res) => {
         return res.json({
             code: 'OK',
             success: true,
-            message: 'getUser',
-            data: user
+            message: 'getEstate',
+            data: estate
             
         })
     } catch (err) {
@@ -80,23 +79,16 @@ const getUser = async (req, res) => {
     }
 }
 
-const postUser = async (req, res) => {
+const postEstate = async(req, res) => {
 
     try{
-        const {name, surname, email, password, role} = req.body;
-        const user = await User.create({
-            name,
-            surname,
-            email,
-            password: bcrypt.hashSync(password, 10),
-            role
-        });
+        const estate = await Estate.create({ ...req.body });
         
         return res.json({
             code: 'OK',
             success: true,
-            message: 'postUser',
-            data: user
+            message: 'postEstate',
+            data: estate
         })
 
     }catch(err){
@@ -114,25 +106,25 @@ const postUser = async (req, res) => {
 
 }
 
-const putUser = async (req, res) => {
+const putEstate = async (req, res) => {
 
     try{
-        const { name, surname, img, role, status } = req.body; 
-        const user = await User.findByIdAndUpdate({_id: req.params._id}, { name, surname, img, role, status }, {new: true, runValidators: true});
-        if( !user ){
+
+        const estate = await Estate.findByIdAndUpdate({_id: req.params._id}, {...req.body}, {new: true, runValidators: true});
+        if( !estate ){
             return res.status(404).json({
                 code: 'NOT-FOUND',
                 success: false,
-                message: 'User not found',
+                message: 'Estate not found',
                 data: null
             })
-
         }
+
         return res.json({
             code: 'OK',
             success: true,
-            message: 'Update user',
-            data: user
+            message: 'Update estate',
+            data: estate
         })
         
     }catch(err){
@@ -147,25 +139,25 @@ const putUser = async (req, res) => {
     }
 }
 
-const delUser = async (req, res) => {
+const delEstate = async (req, res) => {
 
     try {
 
-        const user = await User.deleteOne({_id: req.params._id});
-        if( !user ){
-            return res.json({
-                code: 'ERR',
+        const estate = await Estate.deleteOne({_id: req.params._id});
+        if( !estate ){
+            return res.status(404).json({
+                code: 'NOT-FOUND',
                 success: false,
-                message: 'The user Id could not be found',
+                message: 'The Estate Id could not be found',
                 data: null
-            
             })
         }
+
         return res.json({
             code: 'OK',
             success: true,
-            message: 'Delete User',
-            data: user
+            message: 'Delete estate',
+            data: estate
         
         })
 
@@ -184,9 +176,9 @@ const delUser = async (req, res) => {
 }
 
 module.exports = {
-    getAllUser,
-    getUser,
-    postUser,
-    putUser,
-    delUser
+    getAllEstate,
+    getEstate,
+    postEstate,
+    putEstate,
+    delEstate
 }

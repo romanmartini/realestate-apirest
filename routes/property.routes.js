@@ -1,4 +1,4 @@
-const { getAllProperties, getProperty, postProperty, putProperty, delProperty } = require('../controllers/property.controllers');
+const { getAllProperties, getProperty, postProperty, putProperty, delProperty } = require('../controllers/property.controller');
 const router = require('express').Router();
 
 router.get('/', getAllProperties);

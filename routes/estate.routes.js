@@ -1,4 +1,4 @@
-const { getAllEstate, getEstate, postEstate, putEstate, delEstate } = require('../controllers/estate.controllers');
+const { getAllEstate, getEstate, postEstate, putEstate, delEstate } = require('../controllers/estate.controller');
 const router = require('express').Router();
 
 router.get('/', getAllEstate);

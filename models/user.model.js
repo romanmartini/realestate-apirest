@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator')
+const uniqueValidator = require('mongoose-unique-validator');
 
 const validRoles = {
     values: ['ADMIN', 'USER', 'ESTATE_MANAGER'],
@@ -53,10 +53,8 @@ userSchema.plugin( uniqueValidator, { message: 'The {PATH} is in use' });
 
 userSchema.methods.toJSON = function(){
 
-    const user = this;
-    const userObject = user.toObject();
-    delete userObject.password;
-    return userObject;
+    const { password, createdAt, updatedAt, __v, ...rest } = this.toObject();
+    return rest;
 
 }
 
